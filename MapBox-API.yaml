@@ -1,0 +1,740 @@
+openapi: 3.1.0
+x-stoplight:
+  id: wfmh3b2k00y5x
+info:
+  title: MapBox API
+  version: '1.0'
+  description: Pet-project for studing API.
+  summary: API for MapBox.com
+  contact:
+    name: Andrey
+    email: andrey-1510@outlook.com
+    url: 'https://github.com/andrey1510'
+  license:
+    name: GPL-3.0
+    url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
+servers:
+  - url: 'https://api.mapbox.com/geocoding/v5'
+    description: geo5
+paths:
+  '/mapbox.places/{search_text}.json':
+    parameters:
+      - schema:
+          type: string
+          maxLength: 256
+        name: search_text
+        in: path
+        required: true
+        description: 'The feature you’re trying to look up. This could be an address, a point of interest name, a city name, etc. '
+    get:
+      summary: Your GET endpoint
+      tags:
+        - Forward geocoding
+      responses:
+        '200':
+          $ref: '#/components/responses/search_text_response'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      operationId: get-forward-search
+      x-internal: false
+      description: The forward geocoding query type allows you to look up a single location by name and returns its geographic coordinates.
+      parameters:
+        - schema:
+            type: integer
+            maximum: 10
+            example: 6
+          in: query
+          name: limit
+          description: Specify the maximum number of results to return.
+        - schema:
+            type: boolean
+            example: false
+          in: query
+          name: autocomplete
+          description: 'When autocomplete is enabled, results will be included that start with the requested string, rather than just responses that match it exactly.'
+        - $ref: '#/components/parameters/country'
+        - $ref: '#/components/parameters/language'
+        - $ref: '#/components/parameters/types'
+        - schema:
+            type: string
+            example: '-74.70850,40.78375'
+          in: query
+          name: proximity
+          description: 'Bias the response to favor results that are closer to this location. Provided as two comma-separated coordinates in longitude,latitude order, or the string ip to bias based on reverse IP lookup.'
+  '/mapbox.places/{longitude},{latitude}.json':
+    parameters:
+      - schema:
+          type: number
+          example: -73.989
+        name: longitude
+        in: path
+        required: true
+        description: 'longitude from the longitude, latitude pair that specifies the location being queried.'
+      - schema:
+          type: number
+          example: 40.733
+        name: latitude
+        in: path
+        required: true
+        description: 'latitude from the longitude, latitude pair that specifies the location being queried.'
+    get:
+      summary: Your GET endpoint
+      tags:
+        - Reverse geocoding
+      responses:
+        '200':
+          $ref: '#/components/responses/reverse_search_response'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      operationId: get-reverse-search
+      description: The reverse geocoding query type allows you to look up a single pair of coordinates and returns the geographic feature or features that exist at that location.
+      parameters:
+        - $ref: '#/components/parameters/country'
+        - $ref: '#/components/parameters/language'
+        - schema:
+            type: integer
+            maximum: 5
+            example: 3
+          in: query
+          name: limit
+          description: Specify the maximum number of results to return.
+        - schema:
+            type: string
+            example: score
+          in: query
+          name: reverseMode
+          description: 'Decides how results are sorted in a reverse geocoding query if multiple results are requested using a limit other than 1. Options are distance (default), which causes the closest feature to always be returned first, and score, which allows high-prominence features to be sorted higher than nearer, lower-prominence features.'
+        - $ref: '#/components/parameters/types'
+components:
+  schemas: {}
+  securitySchemes:
+    access_key:
+      name: access_token
+      type: apiKey
+      in: query
+      description: API key desc
+  parameters:
+    country:
+      name: country
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[A-Z,]'
+        example: 'DE,ES'
+      description: Limit results to one or more countries. Permitted values are ISO 3166 alpha 2 country codes separated by commas.
+    language:
+      name: language
+      in: query
+      required: false
+      schema:
+        type: string
+        example: 'en,ru'
+      description: 'Specify the user’s language. Options are IETF language tags comprised of a mandatory ISO 639-1 language code and, optionally, one or more IETF subtags for country or script. More than one value can also be specified, separated by commas.'
+    types:
+      name: types
+      in: query
+      required: false
+      schema:
+        type: string
+        example: poi
+      description: 'Filter results to include only a subset (one or more) of the available feature types. Options are country, region, postcode, district, place, locality, neighborhood, address, and poi. Multiple options can be comma-separated. '
+  responses:
+    search_text_response:
+      description: Forward geocoding
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              query:
+                type: array
+                items:
+                  type: string
+              features:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                    place_type:
+                      type: array
+                      items:
+                        type: string
+                    relevance:
+                      type:
+                        - integer
+                        - number
+                    properties:
+                      type: object
+                      properties: {}
+                    text:
+                      type: string
+                    place_name:
+                      type: string
+                    matching_text:
+                      type: string
+                    matching_place_name:
+                      type: string
+                    center:
+                      type: array
+                      items:
+                        type: number
+                    geometry:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        coordinates:
+                          type: array
+                          items:
+                            type: number
+                        interpolated:
+                          type: boolean
+                        omitted:
+                          type: boolean
+                    address:
+                      type: string
+                    context:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          text:
+                            type: string
+                          wikidata:
+                            type:
+                              - 'null'
+                              - string
+                          short_code:
+                            type: string
+              attribution:
+                type: string
+            x-examples:
+              Example 1:
+                type: FeatureCollection
+                query:
+                  - '825'
+                  - s
+                  - milwaukee
+                  - ave
+                  - deerfield
+                  - il
+                  - '60015'
+                features:
+                  - id: address.4356035406756260
+                    type: Feature
+                    place_type:
+                      - address
+                    relevance: 1
+                    properties: {}
+                    text: Milwaukee Ave
+                    place_name: '825 Milwaukee Ave, Deerfield, Illinois 60015, United States'
+                    matching_text: South Milwaukee Avenue
+                    matching_place_name: '825 South Milwaukee Avenue, Deerfield, Illinois 60015, United States'
+                    center:
+                      - -87.921434
+                      - 42.166602
+                    geometry:
+                      type: Point
+                      coordinates:
+                        - -87.921434
+                        - 42.166602
+                      interpolated: true
+                      omitted: true
+                    address: '825'
+                    context:
+                      - id: neighborhood.287187
+                        text: Lake Cook Road
+                      - id: postcode.13903677306297990
+                        text: '60015'
+                      - id: place.5958304312090910
+                        wikidata: Q287895
+                        text: Deerfield
+                      - id: region.3290978600358810
+                        short_code: US-IL
+                        wikidata: Q1204
+                        text: Illinois
+                      - id: country.9053006287256050
+                        short_code: us
+                        wikidata: Q30
+                        text: United States
+                  - id: address.7464624790403620
+                    type: Feature
+                    place_type:
+                      - address
+                    relevance: 0.5
+                    properties: {}
+                    text: Milwaukee Ave
+                    place_name: '825 Milwaukee Ave, Wheeling, Illinois 60090, United States'
+                    matching_text: South Milwaukee Avenue
+                    matching_place_name: '825 South Milwaukee Avenue, Wheeling, Illinois 60090, United States'
+                    center:
+                      - -87.910299
+                      - 42.144504
+                    geometry:
+                      type: Point
+                      coordinates:
+                        - -87.910299
+                        - 42.144504
+                      interpolated: true
+                    address: '825'
+                    context:
+                      - id: neighborhood.287187
+                        text: Lake Cook Road
+                      - id: postcode.9418633295906190
+                        text: '60090'
+                      - id: place.9902190947082220
+                        wikidata: Q935043
+                        text: Wheeling
+                      - id: region.3290978600358810
+                        short_code: US-IL
+                        wikidata: Q1204
+                        text: Illinois
+                      - id: country.9053006287256050
+                        short_code: us
+                        wikidata: Q30
+                        text: United States
+                  - id: address.6472754353404224
+                    type: Feature
+                    place_type:
+                      - address
+                    relevance: 0.5
+                    properties: {}
+                    text: Milwaukee Avenue
+                    place_name: '825 Milwaukee Avenue, Glenview, Illinois 60025, United States'
+                    matching_text: South Milwaukee Avenue
+                    matching_place_name: '825 South Milwaukee Avenue, Glenview, Illinois 60025, United States'
+                    center:
+                      - -87.852677
+                      - 42.071152
+                    geometry:
+                      type: Point
+                      coordinates:
+                        - -87.852677
+                        - 42.071152
+                    address: '825'
+                    context:
+                      - id: neighborhood.275266
+                        text: Northfield Woods
+                      - id: postcode.3787740186211610
+                        text: '60025'
+                      - id: place.10211845459386970
+                        wikidata: null
+                        text: Glenview
+                      - id: region.3290978600358810
+                        short_code: US-IL
+                        wikidata: Q1204
+                        text: Illinois
+                      - id: country.9053006287256050
+                        short_code: us
+                        wikidata: Q30
+                        text: United States
+                  - id: address.1225436500189372
+                    type: Feature
+                    place_type:
+                      - address
+                    relevance: 0.5
+                    properties: {}
+                    text: Milwaukee Ave
+                    place_name: '825 Milwaukee Ave, Buffalo Grove, Illinois 60089, United States'
+                    matching_text: South Milwaukee Avenue
+                    matching_place_name: '825 South Milwaukee Avenue, Buffalo Grove, Illinois 60089, United States'
+                    center:
+                      - -87.917484
+                      - 42.158084
+                    geometry:
+                      type: Point
+                      coordinates:
+                        - -87.917484
+                        - 42.158084
+                      interpolated: true
+                    address: '825'
+                    context:
+                      - id: neighborhood.287187
+                        text: Lake Cook Road
+                      - id: postcode.11727721238210580
+                        text: '60089'
+                      - id: place.8589721255665070
+                        wikidata: Q967086
+                        text: Buffalo Grove
+                      - id: region.3290978600358810
+                        short_code: US-IL
+                        wikidata: Q1204
+                        text: Illinois
+                      - id: country.9053006287256050
+                        short_code: us
+                        wikidata: Q30
+                        text: United States
+                  - id: address.240107872738130
+                    type: Feature
+                    place_type:
+                      - address
+                    relevance: 0.5
+                    properties: {}
+                    text: Milwaukee Avenue
+                    place_name: '825 Milwaukee Avenue, Wheeling, Illinois 60090, United States'
+                    matching_text: South Milwaukee Avenue
+                    matching_place_name: '825 South Milwaukee Avenue, Wheeling, Illinois 60090, United States'
+                    center:
+                      - -87.898319
+                      - 42.126289
+                    geometry:
+                      type: Point
+                      coordinates:
+                        - -87.898319
+                        - 42.126289
+                      interpolated: true
+                      omitted: true
+                    address: '825'
+                    context:
+                      - id: neighborhood.287189
+                        text: Milwaukee Avenue
+                      - id: postcode.9418633295906190
+                        text: '60090'
+                      - id: place.9902190947082220
+                        wikidata: Q935043
+                        text: Wheeling
+                      - id: region.3290978600358810
+                        short_code: US-IL
+                        wikidata: Q1204
+                        text: Illinois
+                      - id: country.9053006287256050
+                        short_code: us
+                        wikidata: Q30
+                        text: United States
+                attribution: 'NOTICE: © 2018 Mapbox and its suppliers. All rights reserved. Use of this data is subject to the Mapbox Terms of Service (https://www.mapbox.com/about/maps/). This response and the information it contains may not be retained. POI(s) provided by Foursquare.'
+      headers: {}
+    reverse_search_response:
+      description: Reverse geocoding response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              query:
+                type: array
+                items:
+                  type: number
+              features:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                    place_type:
+                      type: array
+                      items:
+                        type: string
+                    relevance:
+                      type: integer
+                    properties:
+                      type: object
+                      properties:
+                        foursquare:
+                          type: string
+                        landmark:
+                          type: boolean
+                        address:
+                          type: string
+                        category:
+                          type: string
+                    text_ru:
+                      type: string
+                    language_ru:
+                      type: string
+                    place_name_ru:
+                      type: string
+                    text:
+                      type: string
+                    language:
+                      type: string
+                    place_name:
+                      type: string
+                    center:
+                      type: array
+                      items:
+                        type: number
+                    geometry:
+                      type: object
+                      properties:
+                        coordinates:
+                          type: array
+                          items:
+                            type: number
+                        type:
+                          type: string
+                    context:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          text_ru:
+                            type: string
+                          text:
+                            type: string
+                          short_code:
+                            type: string
+                          wikidata:
+                            type: string
+                          language_ru:
+                            type: string
+                          language:
+                            type: string
+              attribution:
+                type: string
+            x-examples:
+              Example 1:
+                type: FeatureCollection
+                query:
+                  - 37.60452
+                  - 55.76348
+                features:
+                  - id: poi.429496818033
+                    type: Feature
+                    place_type:
+                      - poi
+                    relevance: 1
+                    properties:
+                      foursquare: 4bbb500098c7ef3b92f73302
+                      landmark: true
+                      address: 'Тверской бул., 26/5'
+                      category: 'confectionery, confection, sweets, candy store, candy, candies, chocolatier, chocolate, craft, shop'
+                    text_ru: Кондитерская «Кафе ПушкинЪ»
+                    language_ru: ru
+                    place_name_ru: 'Кондитерская «Кафе ПушкинЪ», Тверской бул., 26/5, Москва, 123104, Россия'
+                    text: Кондитерская «Кафе ПушкинЪ»
+                    language: ru
+                    place_name: 'Кондитерская «Кафе ПушкинЪ», Тверской бул., 26/5, Москва, 123104, Россия'
+                    center:
+                      - 37.604469
+                      - 55.7635
+                    geometry:
+                      coordinates:
+                        - 37.604469
+                        - 55.7635
+                      type: Point
+                    context:
+                      - id: postcode.2854594
+                        text_ru: '123104'
+                        text: '123104'
+                      - id: locality.1370818
+                        text_ru: округ Пресненский
+                        text: округ Пресненский
+                      - id: place.558274
+                        short_code: RU-MOW
+                        wikidata: Q649
+                        text_ru: Москва
+                        language_ru: ru
+                        text: Москва
+                        language: ru
+                      - id: country.8898
+                        short_code: ru
+                        wikidata: Q159
+                        text_ru: Россия
+                        language_ru: ru
+                        text: Россия
+                        language: ru
+                  - id: poi.781684053024
+                    type: Feature
+                    place_type:
+                      - poi
+                    relevance: 1
+                    properties:
+                      foursquare: 4bc5e0fc41cb76b077ef3e6f
+                      landmark: true
+                      address: 'Тверской бул., 26, стр. 3'
+                      category: 'asian restaurant, asian food, restaurant'
+                    text_ru: Турандот
+                    language_ru: ru
+                    place_name_ru: 'Турандот, Тверской бул., 26, стр. 3, Москва, 125009, Россия'
+                    text: Турандот
+                    language: ru
+                    place_name: 'Турандот, Тверской бул., 26, стр. 3, Москва, 125009, Россия'
+                    center:
+                      - 37.60498
+                      - 55.763271
+                    geometry:
+                      coordinates:
+                        - 37.60498
+                        - 55.763271
+                      type: Point
+                    context:
+                      - id: postcode.3059394
+                        text_ru: '125009'
+                        text: '125009'
+                      - id: locality.1370818
+                        text_ru: округ Пресненский
+                        text: округ Пресненский
+                      - id: place.558274
+                        short_code: RU-MOW
+                        wikidata: Q649
+                        text_ru: Москва
+                        language_ru: ru
+                        text: Москва
+                        language: ru
+                      - id: country.8898
+                        short_code: ru
+                        wikidata: Q159
+                        text_ru: Россия
+                        language_ru: ru
+                        text: Россия
+                        language: ru
+                  - id: poi.541165912819
+                    type: Feature
+                    place_type:
+                      - poi
+                    relevance: 1
+                    properties:
+                      foursquare: 587e8782d98f366cfb42e876
+                      landmark: true
+                      address: 'Тверской бул., 26'
+                      category: 'seafood, seafood restaurant, restaurant'
+                    text_ru: Волна
+                    place_name_ru: 'Волна, Тверской бул., 26, Москва, 123104, Россия'
+                    text: Волна
+                    place_name: 'Волна, Тверской бул., 26, Москва, 123104, Россия'
+                    center:
+                      - 37.60416
+                      - 55.763184
+                    geometry:
+                      coordinates:
+                        - 37.60416
+                        - 55.763184
+                      type: Point
+                    context:
+                      - id: postcode.2854594
+                        text_ru: '123104'
+                        text: '123104'
+                      - id: locality.1370818
+                        text_ru: округ Пресненский
+                        text: округ Пресненский
+                      - id: place.558274
+                        short_code: RU-MOW
+                        wikidata: Q649
+                        text_ru: Москва
+                        language_ru: ru
+                        text: Москва
+                        language: ru
+                      - id: country.8898
+                        short_code: ru
+                        wikidata: Q159
+                        text_ru: Россия
+                        language_ru: ru
+                        text: Россия
+                        language: ru
+                  - id: poi.154618906484
+                    type: Feature
+                    place_type:
+                      - poi
+                    relevance: 1
+                    properties:
+                      foursquare: 55227564498eb7e96569f725
+                      landmark: true
+                      address: 'Тверской бул., 26, стр. 3'
+                      category: 'art gallery, art galleries, galleries, painting, art, gallery, tourism'
+                    text_ru: Академия «Турандот»
+                    place_name_ru: 'Академия «Турандот», Тверской бул., 26, стр. 3, Москва, 125009, Россия'
+                    text: Академия «Турандот»
+                    place_name: 'Академия «Турандот», Тверской бул., 26, стр. 3, Москва, 125009, Россия'
+                    center:
+                      - 37.604814
+                      - 55.763882
+                    geometry:
+                      coordinates:
+                        - 37.604814
+                        - 55.763882
+                      type: Point
+                    context:
+                      - id: postcode.3059394
+                        text_ru: '125009'
+                        text: '125009'
+                      - id: locality.1632962
+                        text_ru: округ Тверской
+                        text: округ Тверской
+                      - id: place.558274
+                        short_code: RU-MOW
+                        wikidata: Q649
+                        text_ru: Москва
+                        language_ru: ru
+                        text: Москва
+                        language: ru
+                      - id: country.8898
+                        short_code: ru
+                        wikidata: Q159
+                        text_ru: Россия
+                        language_ru: ru
+                        text: Россия
+                        language: ru
+                  - id: poi.360777303356
+                    type: Feature
+                    place_type:
+                      - poi
+                    relevance: 1
+                    properties:
+                      foursquare: 544a0ba1498e2c55cbf9daf1
+                      landmark: true
+                      address: 'Тверской бул., 26/2'
+                      category: 'cocktail bar, cocktail, bar, alcohol'
+                    text_ru: Фаренгейт
+                    language_ru: ru
+                    place_name_ru: 'Фаренгейт, Тверской бул., 26/2, Москва, 123104, Россия'
+                    text: Фаренгейт
+                    language: ru
+                    place_name: 'Фаренгейт, Тверской бул., 26/2, Москва, 123104, Россия'
+                    center:
+                      - 37.604078
+                      - 55.763111
+                    geometry:
+                      coordinates:
+                        - 37.604078
+                        - 55.763111
+                      type: Point
+                    context:
+                      - id: postcode.2854594
+                        text_ru: '123104'
+                        text: '123104'
+                      - id: locality.1370818
+                        text_ru: округ Пресненский
+                        text: округ Пресненский
+                      - id: place.558274
+                        short_code: RU-MOW
+                        wikidata: Q649
+                        text_ru: Москва
+                        language_ru: ru
+                        text: Москва
+                        language: ru
+                      - id: country.8898
+                        short_code: ru
+                        wikidata: Q159
+                        text_ru: Россия
+                        language_ru: ru
+                        text: Россия
+                        language: ru
+                attribution: 'NOTICE: © 2023 Mapbox and its suppliers. All rights reserved. Use of this data is subject to the Mapbox Terms of Service (https://www.mapbox.com/about/maps/). This response and the information it contains may not be retained. POI(s) provided by Foursquare.'
+x-internal: false
+security:
+  - access_key: []
+tags:
+  - name: Forward geocoding
+    description: Forward geocoding queries
+  - name: Reverse geocoding
+    description: Reverse geocoding queries
